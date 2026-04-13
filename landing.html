@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>カタカナどっち？ | Metamorph</title>
+    <meta
+      name="description"
+      content="ひらがなとカタカナの対応を直感的に学べる学習アプリ『カタカナどっち？』。App Store DLサイト紹介、ブラウザで試せるデモがあります。"
+    />
+    <style>
+      :root {
+        --bg: #121212;
+        --bg-soft: #1c1f26;
+        --panel: rgba(255, 255, 255, 0.08);
+        --panel-strong: rgba(255, 255, 255, 0.12);
+        --text: #f8f1e6;
+        --muted: #b9b2a6;
+        --accent: #ffb000;
+        --accent-2: #ff6448;
+        --ok: #45c486;
+        --ng: #ff6a5a;
+        --line: rgba(255, 255, 255, 0.1);
+        --shadow: 0 24px 60px rgba(0, 0, 0, 0.32);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html {
+        scroll-behavior: smooth;
+      }
+
+      body {
+        margin: 0;
+        font-family: "Avenir Next", "Hiragino Sans", "Noto Sans JP", sans-serif;
+        color: var(--text);
+        background:
+          radial-gradient(circle at top left, rgba(255, 176, 0, 0.18), transparent 32%),
+          radial-gradient(circle at 85% 18%, rgba(255, 100, 72, 0.16), transparent 26%),
+          linear-gradient(180deg, #1b1c20 0%, #101114 100%);
+      }
+
+      a {
+        color: inherit;
+        text-decoration: none;
+      }
+
+      .page {
+        width: min(1120px, calc(100% - 32px));
+        margin: 0 auto;
+      }
+
+      .hero {
+        min-height: 100vh;
+        display: grid;
+        align-items: center;
+        padding: 40px 0 80px;
+      }
+
+      .hero-grid {
+        display: grid;
+        grid-template-columns: 1.1fr 0.9fr;
+        gap: 28px;
+        align-items: center;
+      }
+
+      .eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 14px;
+        border-radius: 999px;
+        border: 1px solid var(--line);
+        background: rgba(255, 255, 255, 0.04);
+        color: var(--muted);
+        letter-spacing: 0.06em;
+        font-size: 13px;
+      }
+
+      .hero h1 {
+        margin: 18px 0 14px;
+        font-size: clamp(48px, 8vw, 94px);
+        line-height: 0.94;
+        letter-spacing: -0.04em;
+      }
+
+      .hero h1 span {
+        display: block;
+        color: var(--accent);
+      }
+
+      .lead {
+        max-width: 640px;
+        margin: 0 0 28px;
+        color: var(--muted);
+        font-size: clamp(17px, 2.6vw, 21px);
+        line-height: 1.8;
+      }
+
+      .hero-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 14px;
+        margin-bottom: 24px;
+      }
+
+      .button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        min-height: 56px;
+        padding: 0 22px;
+        border-radius: 18px;
+        border: 1px solid transparent;
+        font-weight: 700;
+        transition: transform 180ms ease, border-color 180ms ease, background 180ms ease;
+      }
+
+      .button:hover {
+        transform: translateY(-2px);
+      }
+
+      .button.primary {
+        background: linear-gradient(135deg, var(--accent), #ff8d32);
+        color: #17130d;
+        box-shadow: 0 16px 30px rgba(255, 176, 0, 0.22);
+      }
+
+      .button.secondary {
+        border-color: var(--line);
+        background: rgba(255, 255, 255, 0.05);
+        color: var(--text);
+      }
+
+      .hero-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+      }
+
+      .meta-pill {
+        padding: 10px 14px;
+        border-radius: 16px;
+        border: 1px solid var(--line);
+        background: rgba(255, 255, 255, 0.04);
+        color: var(--muted);
+        font-size: 14px;
+      }
+
+      .phone-stage {
+        position: relative;
+        display: grid;
+        place-items: center;
+      }
+
+      .phone-glow {
+        position: absolute;
+        inset: auto;
+        width: min(76vw, 420px);
+        height: min(76vw, 420px);
+        border-radius: 999px;
+        background: radial-gradient(circle, rgba(255, 176, 0, 0.28), transparent 56%);
+        filter: blur(16px);
+      }
+
+      .phone {
+        position: relative;
+        width: min(92vw, 360px);
+        border-radius: 36px;
+        padding: 18px;
+        background: linear-gradient(180deg, #0b0c0f, #242730);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        box-shadow: var(--shadow);
+      }
+
+      .phone-top {
+        width: 42%;
+        height: 24px;
+        margin: 0 auto 18px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.08);
+      }
+
+      .screen {
+        border-radius: 28px;
+        padding: 26px 22px 22px;
+        background:
+          radial-gradient(circle at top left, rgba(255, 176, 0, 0.14), transparent 30%),
+          linear-gradient(180deg, #1a1d24, #101217);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+      }
+
+      .app-badge {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        margin-bottom: 20px;
+      }
+
+      .app-badge img {
+        width: 72px;
+        height: 72px;
+        border-radius: 20px;
+        box-shadow: 0 12px 24px rgba(0, 0, 0, 0.28);
+      }
+
+      .app-badge strong {
+        display: block;
+        font-size: 24px;
+      }
+
+      .app-badge span {
+        color: var(--muted);
+        font-size: 14px;
+      }
+
+      .mock-card {
+        display: grid;
+        place-items: center;
+        min-height: 270px;
+        margin: 16px 0;
+        padding: 20px;
+        border-radius: 28px;
+        background: rgba(255, 255, 255, 0.06);
+      }
+
+      .mock-kana {
+        font-size: 70px;
+        font-weight: 900;
+      }
+
+      .mock-arrow {
+        margin: 8px 0;
+        color: rgba(255, 255, 255, 0.45);
+        font-size: 28px;
+      }
+
+      .mock-answer {
+        font-size: 70px;
+        font-weight: 900;
+      }
+
+      .mock-footer {
+        display: flex;
+        justify-content: space-between;
+        color: var(--muted);
+        font-size: 14px;
+      }
+
+      section {
+        padding: 24px 0 84px;
+      }
+
+      .section-heading {
+        margin-bottom: 22px;
+      }
+
+      .section-heading h2 {
+        margin: 0 0 8px;
+        font-size: clamp(34px, 5vw, 54px);
+        letter-spacing: -0.04em;
+      }
+
+      .section-heading p {
+        margin: 0;
+        max-width: 720px;
+        color: var(--muted);
+        font-size: 17px;
+        line-height: 1.8;
+      }
+
+      .features {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 18px;
+      }
+
+      .feature {
+        padding: 24px;
+        border-radius: 24px;
+        border: 1px solid var(--line);
+        background: var(--panel);
+        backdrop-filter: blur(12px);
+      }
+
+      .feature strong {
+        display: block;
+        margin-bottom: 10px;
+        font-size: 20px;
+      }
+
+      .feature p {
+        margin: 0;
+        color: var(--muted);
+        line-height: 1.75;
+      }
+
+      .demo-shell {
+        display: grid;
+        grid-template-columns: 1fr 0.9fr;
+        gap: 22px;
+      }
+
+      .demo-panel,
+      .demo-side {
+        border-radius: 28px;
+        border: 1px solid var(--line);
+        background: var(--panel);
+        backdrop-filter: blur(14px);
+      }
+
+      .demo-panel {
+        padding: 22px;
+      }
+
+      .demo-head {
+        display: flex;
+        justify-content: space-between;
+        gap: 16px;
+        align-items: flex-start;
+        margin-bottom: 18px;
+      }
+
+      .demo-label {
+        display: inline-block;
+        margin-bottom: 6px;
+        color: var(--muted);
+        font-size: 13px;
+        letter-spacing: 0.08em;
+      }
+
+      .demo-score {
+        color: var(--muted);
+        font-size: 15px;
+      }
+
+      .demo-card {
+        display: grid;
+        place-items: center;
+        min-height: 360px;
+        padding: 28px;
+        border-radius: 28px;
+        background:
+          radial-gradient(circle at top center, rgba(255, 255, 255, 0.05), transparent 40%),
+          rgba(0, 0, 0, 0.18);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        text-align: center;
+      }
+
+      .demo-kana {
+        font-size: clamp(72px, 12vw, 104px);
+        font-weight: 900;
+      }
+
+      .demo-arrow {
+        margin: 12px 0;
+        color: rgba(255, 255, 255, 0.45);
+        font-size: 34px;
+      }
+
+      .demo-answer {
+        font-size: clamp(72px, 12vw, 104px);
+        font-weight: 900;
+      }
+
+      .answer-buttons {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 14px;
+        margin-top: 18px;
+      }
+
+      .answer-button {
+        min-height: 64px;
+        border: 0;
+        border-radius: 18px;
+        font: inherit;
+        font-weight: 800;
+        cursor: pointer;
+        color: white;
+        transition: transform 180ms ease, filter 180ms ease;
+      }
+
+      .answer-button:hover {
+        transform: translateY(-2px);
+        filter: brightness(1.04);
+      }
+
+      .answer-button:disabled {
+        cursor: default;
+        opacity: 0.6;
+        transform: none;
+        filter: none;
+      }
+
+      .answer-button.ng {
+        background: linear-gradient(135deg, #bf4335, #ff6a5a);
+      }
+
+      .answer-button.ok {
+        background: linear-gradient(135deg, #1f8b5b, #49c98e);
+      }
+
+      .demo-side {
+        padding: 22px;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+      }
+
+      .status-box,
+      .review-box,
+      .cta-box {
+        padding: 18px;
+        border-radius: 22px;
+        background: rgba(255, 255, 255, 0.04);
+      }
+
+      .status-box p,
+      .review-box p,
+      .cta-box p {
+        margin: 8px 0 0;
+        color: var(--muted);
+        line-height: 1.75;
+      }
+
+      .status-chip {
+        display: inline-flex;
+        align-items: center;
+        min-height: 34px;
+        padding: 0 12px;
+        border-radius: 999px;
+        font-weight: 700;
+      }
+
+      .status-chip.idle {
+        background: rgba(255, 255, 255, 0.08);
+        color: var(--muted);
+      }
+
+      .status-chip.ok {
+        background: rgba(69, 196, 134, 0.18);
+        color: #87f0be;
+      }
+
+      .status-chip.ng {
+        background: rgba(255, 106, 90, 0.16);
+        color: #ff9d91;
+      }
+
+      .review-box strong,
+      .status-box strong,
+      .cta-box strong {
+        display: block;
+        margin-bottom: 6px;
+        font-size: 18px;
+      }
+
+      .small-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        margin-top: 12px;
+        color: var(--accent);
+        font-weight: 700;
+      }
+
+      .footer {
+        padding: 0 0 48px;
+        color: var(--muted);
+        text-align: center;
+      }
+
+      .footer a {
+        color: var(--text);
+      }
+
+      @media (max-width: 920px) {
+        .hero-grid,
+        .demo-shell,
+        .features {
+          grid-template-columns: 1fr;
+        }
+
+        .phone-stage {
+          order: -1;
+        }
+      }
+
+      @media (max-width: 640px) {
+        .page {
+          width: min(100% - 20px, 1120px);
+        }
+
+        .hero {
+          padding-top: 24px;
+        }
+
+        .hero-actions,
+        .answer-buttons {
+          grid-template-columns: 1fr;
+          display: grid;
+        }
+
+        .demo-head,
+        .mock-footer {
+          flex-direction: column;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="page">
+      <section class="hero">
+        <div class="hero-grid">
+          <div>
+            <div class="eyebrow">Metamorph</div>
+            <h1>カタカナが<span>直感で身につく。</span></h1>
+            <p class="lead">
+              「カタカナどっち？」は、ひらがなとカタカナの正しい組み合わせをテンポよく見分ける学習アプリです。
+              短い問題を気持ちよく解きながら、似た字の混同も自然に減らせます。
+            </p>
+            <div class="hero-actions">
+              <a
+                class="button primary"
+                href="https://apps.apple.com/jp/app/%E3%82%AB%E3%82%BF%E3%82%AB%E3%83%8A%E3%81%A9%E3%81%A3%E3%81%A1/id6758129689"
+                target="_blank"
+                rel="noreferrer"
+              >
+                App Storeでダウンロード
+              </a>
+              <a class="button secondary" href="#trial">まずは3問ためす</a>
+            </div>
+            <div class="hero-meta">
+              <div class="meta-pill">iPhone向け</div>
+              <div class="meta-pill">日英2言語対応</div>
+              <div class="meta-pill">Metamorph</div>
+            </div>
+          </div>
+
+          <div class="phone-stage">
+            <div class="phone-glow"></div>
+            <div class="phone">
+              <div class="phone-top"></div>
+              <div class="screen">
+                <div class="app-badge">
+                  <img
+                    src="icon.png"
+                    alt="カタカナどっち？ App Icon"
+                  />
+                  <div>
+                    <strong>カタカナどっち？</strong>
+                    <span>ひらがな → カタカナの学習</span>
+                  </div>
+                </div>
+                <div class="mock-card">
+                  <div class="mock-kana">し</div>
+                  <div class="mock-arrow">↓</div>
+                  <div class="mock-answer">シ</div>
+                </div>
+                <div class="mock-footer">
+                  <span>左: 不正解</span>
+                  <span>右: 正解</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <div class="section-heading">
+          <h2>覚えやすさを、ちゃんと設計。</h2>
+          <p>
+            一問ずつ迷いすぎず、でも雑にもならない。そのバランスで、カタカナの形と対応をテンポよく定着させます。
+          </p>
+        </div>
+        <div class="features">
+          <article class="feature">
+            <strong>瞬時に判断</strong>
+            <p>
+              正しい組み合わせかどうかを左右感覚で答える設計。反復のテンポが落ちず、短時間でも集中できます。
+            </p>
+          </article>
+          <article class="feature">
+            <strong>まぎらわしい字に強くなる</strong>
+            <p>
+              シとツ、ソとンのような混同しやすい文字も、問題を重ねる中で自然に見分けやすくなります。
+            </p>
+          </article>
+          <article class="feature">
+            <strong>確認しながら進める</strong>
+            <p>
+              解説表示をオンにすれば、前の問題を控えめに復習しながら続けられます。最後の1問は結果前にゆっくり確認できます。
+            </p>
+          </article>
+        </div>
+      </section>
+
+      <section id="trial">
+        <div class="section-heading">
+          <h2>ブラウザで3問だけ、試してみる。</h2>
+          <p>
+            実際のアプリと同じ発想で、「この組み合わせは正しい？」を答える簡易デモです。3問終わったら App Store 版へどうぞ。
+          </p>
+        </div>
+
+        <div class="demo-shell">
+          <div class="demo-panel">
+            <div class="demo-head">
+              <div>
+                <span class="demo-label">TRIAL MODE</span>
+                <h3 style="margin: 0; font-size: 28px">カタカナどっち？トライアル</h3>
+              </div>
+              <div class="demo-score" id="progressText">1 / 3</div>
+            </div>
+
+            <div class="demo-card">
+              <div>
+                <div class="demo-kana" id="hiraganaText">し</div>
+                <div class="demo-arrow">↓</div>
+                <div class="demo-answer" id="answerText">シ</div>
+              </div>
+            </div>
+
+            <div class="answer-buttons">
+              <button class="answer-button ng" id="incorrectButton">不正解</button>
+              <button class="answer-button ok" id="correctButton">正解</button>
+            </div>
+          </div>
+
+          <aside class="demo-side">
+            <div class="status-box">
+              <strong>現在の結果</strong>
+              <div class="status-chip idle" id="statusChip">回答待ち</div>
+              <p id="statusText">
+                左右ボタンで答えてください。正しい組み合わせなら「正解」、違う文字なら「不正解」です。
+              </p>
+            </div>
+
+            <div class="review-box">
+              <strong>直前の解説</strong>
+              <p id="reviewText">
+                ここに解説が表示されます。3問だけでも、アプリの学習テンポをつかめます。
+              </p>
+            </div>
+
+            <div class="cta-box">
+              <strong>もっと続けるなら</strong>
+              <p>
+                フル版では10問単位で遊べて、解説の表示切替や苦手問題の確認もできます。
+              </p>
+              <a
+                class="small-link"
+                href="https://apps.apple.com/jp/app/%E3%82%AB%E3%82%BF%E3%82%AB%E3%83%8A%E3%81%A9%E3%81%A3%E3%81%A1/id6758129689"
+                target="_blank"
+                rel="noreferrer"
+              >
+                App Storeを見る →
+              </a>
+            </div>
+          </aside>
+        </div>
+      </section>
+
+      <div class="footer">
+        <p>© Metamorph</p>
+      </div>
+    </main>
+
+    <script>
+      const trialQuestions = [
+        { hiragana: "し", shownAnswer: "シ", isCorrect: true, correctAnswer: "シ" },
+        { hiragana: "つ", shownAnswer: "シ", isCorrect: false, correctAnswer: "ツ" },
+        { hiragana: "そ", shownAnswer: "ソ", isCorrect: true, correctAnswer: "ソ" }
+      ];
+
+      let currentIndex = 0;
+      let score = 0;
+      let finished = false;
+      let isLocked = false;
+
+      const hiraganaText = document.getElementById("hiraganaText");
+      const answerText = document.getElementById("answerText");
+      const progressText = document.getElementById("progressText");
+      const statusChip = document.getElementById("statusChip");
+      const statusText = document.getElementById("statusText");
+      const reviewText = document.getElementById("reviewText");
+      const correctButton = document.getElementById("correctButton");
+      const incorrectButton = document.getElementById("incorrectButton");
+
+      function renderQuestion() {
+        const question = trialQuestions[currentIndex];
+        hiraganaText.textContent = question.hiragana;
+        answerText.textContent = question.shownAnswer;
+        progressText.textContent = `${currentIndex + 1} / ${trialQuestions.length}`;
+        statusChip.textContent = "回答待ち";
+        statusChip.className = "status-chip idle";
+        statusText.textContent = "正しい組み合わせなら「正解」、違う文字なら「不正解」を選んでください。";
+        isLocked = false;
+        correctButton.disabled = false;
+        incorrectButton.disabled = false;
+      }
+
+      function finishTrial() {
+        finished = true;
+        isLocked = false;
+        correctButton.disabled = false;
+        incorrectButton.disabled = false;
+        progressText.textContent = `${trialQuestions.length} / ${trialQuestions.length}`;
+        hiraganaText.textContent = "結果";
+        answerText.textContent = `${score}/${trialQuestions.length}`;
+        statusChip.textContent = "終了";
+        statusChip.className = "status-chip idle";
+        statusText.textContent = "3問のミニデモが終わりました。テンポよく学ぶ感覚は、App Store版でそのまま続けられます。";
+        reviewText.textContent = `おつかれさまでした。3問中 ${score} 問正解です。実際のアプリでは10問プレイ、解説表示、苦手問題の確認が使えます。`;
+        correctButton.textContent = "App Storeへ";
+        incorrectButton.textContent = "もう一回";
+      }
+
+      function handleAnswer(userSaysCorrect) {
+        if (isLocked) {
+          return;
+        }
+
+        if (finished) {
+          if (userSaysCorrect) {
+            window.open(
+              "https://apps.apple.com/jp/app/%E3%82%AB%E3%82%BF%E3%82%AB%E3%83%8A%E3%81%A9%E3%81%A3%E3%81%A1/id6758129689",
+              "_blank",
+              "noopener,noreferrer"
+            );
+          } else {
+            currentIndex = 0;
+            score = 0;
+            finished = false;
+            isLocked = false;
+            correctButton.textContent = "正解";
+            incorrectButton.textContent = "不正解";
+            reviewText.textContent = "ここに解説が表示されます。3問だけでも、アプリの学習テンポをつかめます。";
+            renderQuestion();
+          }
+          return;
+        }
+
+        isLocked = true;
+        correctButton.disabled = true;
+        incorrectButton.disabled = true;
+
+        const question = trialQuestions[currentIndex];
+        const userWasCorrect = userSaysCorrect === question.isCorrect;
+
+        if (userWasCorrect) {
+          score += 1;
+          statusChip.textContent = "正解";
+          statusChip.className = "status-chip ok";
+          statusText.textContent = "いい判断です。テンポよく次へ進みましょう。";
+        } else {
+          statusChip.textContent = "不正解";
+          statusChip.className = "status-chip ng";
+          statusText.textContent = "惜しいです。下の解説で正しい対応を確認してから次へ進みましょう。";
+        }
+
+        if (question.isCorrect) {
+          reviewText.textContent = `「${question.hiragana}」に対応するカタカナは「${question.correctAnswer}」です。表示された「${question.shownAnswer}」で合っているので、この問題は正解です。`;
+        } else {
+          reviewText.textContent = `「${question.hiragana}」に対応するカタカナは「${question.correctAnswer}」です。表示された「${question.shownAnswer}」は別の字なので、この問題は不正解です。`;
+        }
+
+        currentIndex += 1;
+
+        if (currentIndex >= trialQuestions.length) {
+          setTimeout(finishTrial, 240);
+          return;
+        }
+
+        setTimeout(renderQuestion, 420);
+      }
+
+      correctButton.addEventListener("click", () => handleAnswer(true));
+      incorrectButton.addEventListener("click", () => handleAnswer(false));
+
+      renderQuestion();
+    </script>
+  </body>
+</html>
